@@ -1006,9 +1006,24 @@ body {
   transition: all 0.2s ease;
 }
 
+.ram-mode-banner {
+  padding: 7px 12px;
+  background-color: rgba(255, 171, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 171, 0, 0.2);
+  color: var(--warning);
+  font-size: 12px;
+  text-align: center;
+  font-weight: 500;
+}
+
 .filter-game-item.checked .filter-game-checkbox {
   background: var(--accent-purple);
   border-color: var(--accent-purple);
+}
+
+.filter-sidebar.ram-mode .filter-game-item.checked .filter-game-checkbox {
+  background: var(--danger);
+  border-color: var(--danger);
 }
 
 .filter-game-checkbox svg {

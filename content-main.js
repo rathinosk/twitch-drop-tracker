@@ -118,7 +118,23 @@
   // ==========================================================================
   // Event Dispatching
   // ==========================================================================
+  // Each dispatch structured-clones the full campaign array twice (main →
+  // isolated world → background) and rewrites all of chrome.storage, so
+  // bursts of GQL responses during a scan are coalesced into one dispatch.
+  let dispatchTimer = null;
+  let lastDispatchAt = 0;
+
   function dispatchCampaigns() {
+    if (dispatchTimer) return;
+    const delay = (Date.now() - lastDispatchAt > 1000) ? 0 : 250;
+    dispatchTimer = setTimeout(() => {
+      dispatchTimer = null;
+      lastDispatchAt = Date.now();
+      doDispatchCampaigns();
+    }, delay);
+  }
+
+  function doDispatchCampaigns() {
     const merged = state.campaigns.map(campaign => ({
       ...campaign,
       timeBasedDrops: state.details[campaign.id] || campaign.timeBasedDrops
@@ -305,10 +321,7 @@
           const newDrops = allDrops.filter(d => !existingIds.has(d.id));
 
           if (newDrops.length > 0) {
-            state.details = {
-              ...state.details,
-              [obj.id]: [...existingDrops, ...newDrops]
-            };
+            state.details[obj.id] = [...existingDrops, ...newDrops];
             dispatchCampaigns();
           }
         }
@@ -326,6 +339,11 @@
   // ==========================================================================
   // Fetch Interceptor
   // ==========================================================================
+  // Every extractor bottoms out at one of these keys, so a response without
+  // any of them can be skipped before JSON.parse — parsing the constant
+  // stream of unrelated Twitch GQL traffic is the main memory cost of a scan.
+  const DROP_MARKERS = ['timeBasedDrops', 'eventBasedDrops', 'dropCampaign', 'gameEventDrops'];
+
   const originalFetch = window.fetch;
 
   window.fetch = async function(...args) {
@@ -342,10 +360,19 @@
     try {
       if (isGraphQL) {
         const clone = response.clone();
-        clone.json().then(data => {
+        clone.text().then(text => {
           // Mark response received
           state.lastApiResponse = Date.now();
           state.pendingRequests = Math.max(0, state.pendingRequests - 1);
+
+          if (!DROP_MARKERS.some(m => text.includes(m))) return;
+
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            return;
+          }
 
           // Extract campaigns list
           const campaigns = extractors.campaignsList(data);
@@ -357,7 +384,7 @@
           // Extract campaign details
           const details = extractors.campaignDetails(data);
           if (details) {
-            state.details = { ...state.details, [details.id]: details.timeBasedDrops };
+            state.details[details.id] = details.timeBasedDrops;
             dispatchCampaigns();
           }
 
@@ -539,9 +566,13 @@
 
   function isGameAllowed(gameName) {
     const filter = getGameFilter();
-    if (!filter.enabled) return true; // No filtering active
-    if (!gameName) return true; // Can't determine game, allow it
-    return filter.games[gameName] !== false; // Allow if checked or not in list
+    if (!gameName) return true;
+    if (filter.ramMode) {
+      // RAM mode: checked (true) = excluded
+      return filter.games[gameName] !== true;
+    }
+    if (!filter.enabled) return true;
+    return filter.games[gameName] !== false;
   }
 
   function getActiveGameCount() {
@@ -653,16 +684,18 @@
 
       // Wait for page content to load
       let retries = 0;
-      while (retries < 10) {
-        const testButtons = document.querySelectorAll('[aria-expanded]');
-        if (testButtons.length > 0) {
-          diagLog.add(`Page ready: found ${testButtons.length} [aria-expanded] elements after ${retries} retries`);
+      while (retries < 30) {
+        const allButtons = document.querySelectorAll('[aria-expanded]');
+        const validButtons = Array.from(allButtons).filter(b => this.isValidButton(b));
+        if (validButtons.length > 0) {
+          diagLog.add(`Page ready: found ${validButtons.length} valid [aria-expanded] elements (${allButtons.length} total) after ${retries}s`);
           break;
         }
         await this.delay(1000);
         retries++;
       }
-      if (retries === 10) diagLog.add('WARNING: Page never loaded [aria-expanded] elements after 10s');
+      if (retries >= 30) diagLog.add(`WARNING: No valid [aria-expanded] elements after 30s (total on page: ${document.querySelectorAll('[aria-expanded]').length}, GQL campaigns: ${state.campaigns.length})`);
+
 
       let totalExpanded = 0;
       let skippedFiltered = 0;
@@ -714,6 +747,15 @@
 
           // Wait for API responses to settle (smart wait for large campaigns)
           await this.waitForApiResponse(responseTimeBefore);
+
+          // Collapse the panel again now that its data is captured. Drop data
+          // comes from GQL interception, not the DOM, and leaving every reward
+          // panel mounted is the main RAM cost of a scan (hundreds of MB).
+          // clickedButtons keeps the re-collapsed button from being re-clicked.
+          if (btn.isConnected && btn.getAttribute('aria-expanded') === 'true') {
+            btn.click();
+            await this.delay(CONFIG.EXPAND_CLICK_DELAY);
+          }
 
           // Check for expired campaign
           const lastDetailId = Object.keys(state.details).pop();
@@ -784,7 +826,7 @@
       diagLog.add(`Finalize: campaigns=${campaignCount} expanded=${totalExpanded} skipped=${skippedFiltered} details=${detailsCount} drops=${totalDrops}`);
       const resultStatus = detailsCount > 0 ? 'SUCCESS' : (totalExpanded === 0 ? 'NO_BUTTONS_CLICKED' : 'DETAILS_NOT_CAPTURED');
       diagLog.add(`Result: ${resultStatus}`);
-      const version = '1.3.3';
+      const version = '1.3.7';
       window.dispatchEvent(new CustomEvent('twitch-drops-diaglog', {
         detail: { log: diagLog.flush(version) }
       }));

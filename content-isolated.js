@@ -48,6 +48,7 @@ function transformCampaigns(rawCampaigns) {
     .map(campaign => ({
       id: campaign.id,
       game: campaign.game?.displayName || campaign.name,
+      gameSlug: campaign.game?.slug || '',
       publisher: campaign.owner?.name || '',
       imageUrl: campaign.game?.boxArtURL?.replace('{width}', '80').replace('{height}', '107') || '',
       startDate: campaign.startAt,

@@ -14,7 +14,7 @@ const log = {
 // =============================================================================
 // Global State
 // =============================================================================
-let gameFilter = { enabled: false, games: {}, hideFiltered: false };
+let gameFilter = { enabled: false, games: {}, hideFiltered: false, ramMode: false };
 let allCampaigns = [];
 let searchQuery = '';
 let filterSearchQuery = '';
@@ -101,16 +101,16 @@ async function initFilter() {
     gameFilter = data.gameFilter;
   }
 
-  // Initialize hideFiltered if not present
-  if (gameFilter.hideFiltered === undefined) {
-    gameFilter.hideFiltered = false;
-  }
+  // Initialize defaults
+  if (gameFilter.hideFiltered === undefined) gameFilter.hideFiltered = false;
+  if (gameFilter.ramMode === undefined) gameFilter.ramMode = false;
 
   // Set checkbox state
   const hideFilteredCheckbox = document.getElementById('hide-filtered-checkbox');
   hideFilteredCheckbox.checked = gameFilter.hideFiltered;
 
   updateFilterButtonState();
+  updateRamModeUI();
 
   // Toggle filter sidebar
   filterBtn.addEventListener('click', () => {
@@ -126,21 +126,25 @@ async function initFilter() {
   closeFilterBtn.addEventListener('click', closeFilter);
   filterOverlay.addEventListener('click', closeFilter);
 
-  // Select/Deselect all
+  // Select/Deselect all (labels flip in RAM mode)
   selectAllBtn.addEventListener('click', () => {
-    Object.keys(gameFilter.games).forEach(game => {
-      gameFilter.games[game] = true;
-    });
-    gameFilter.enabled = false;
+    if (gameFilter.ramMode) {
+      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = false; });
+    } else {
+      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = true; });
+      gameFilter.enabled = false;
+    }
     saveAndApplyFilter();
     renderFilterList();
   });
 
   deselectAllBtn.addEventListener('click', () => {
-    Object.keys(gameFilter.games).forEach(game => {
-      gameFilter.games[game] = false;
-    });
-    gameFilter.enabled = true;
+    if (gameFilter.ramMode) {
+      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = true; });
+    } else {
+      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = false; });
+      gameFilter.enabled = true;
+    }
     saveAndApplyFilter();
     renderFilterList();
   });
@@ -172,8 +176,32 @@ async function initFilter() {
 
 function updateFilterButtonState() {
   const filterBtn = document.getElementById('filter-btn');
-  const hasFilteredGames = Object.values(gameFilter.games).some(v => v === false);
-  filterBtn.classList.toggle('filter-active', hasFilteredGames);
+  const hasExclusions = gameFilter.ramMode
+    ? Object.values(gameFilter.games).some(v => v === true)
+    : Object.values(gameFilter.games).some(v => v === false);
+  filterBtn.classList.toggle('filter-active', gameFilter.ramMode || hasExclusions);
+}
+
+function updateRamModeUI() {
+  const sidebar = document.getElementById('filter-sidebar');
+  const banner = document.getElementById('ram-mode-banner');
+  const selectAllBtn = document.getElementById('select-all-btn');
+  const deselectAllBtn = document.getElementById('deselect-all-btn');
+  const hideFilteredOption = document.querySelector('.filter-hide-option');
+
+  if (gameFilter.ramMode) {
+    sidebar?.classList.add('ram-mode');
+    banner?.classList.remove('hidden');
+    if (selectAllBtn) selectAllBtn.textContent = 'Include All';
+    if (deselectAllBtn) deselectAllBtn.textContent = 'Exclude All';
+    hideFilteredOption?.classList.add('hidden');
+  } else {
+    sidebar?.classList.remove('ram-mode');
+    banner?.classList.add('hidden');
+    if (selectAllBtn) selectAllBtn.textContent = 'Select All';
+    if (deselectAllBtn) deselectAllBtn.textContent = 'Deselect All';
+    hideFilteredOption?.classList.remove('hidden');
+  }
 }
 
 function populateFilterGames(campaigns) {
@@ -184,9 +212,10 @@ function populateFilterGames(campaigns) {
     }
   });
 
+  const defaultChecked = !gameFilter.ramMode;
   games.forEach((imageUrl, gameName) => {
     if (!(gameName in gameFilter.games)) {
-      gameFilter.games[gameName] = true;
+      gameFilter.games[gameName] = defaultChecked;
     }
   });
 
@@ -196,7 +225,9 @@ function populateFilterGames(campaigns) {
     }
   });
 
-  gameFilter.enabled = Object.values(gameFilter.games).some(v => v === false);
+  if (!gameFilter.ramMode) {
+    gameFilter.enabled = Object.values(gameFilter.games).some(v => v === false);
+  }
 
   renderFilterList();
   saveFilter();
@@ -244,7 +275,9 @@ function renderFilterList() {
       const gameName = item.dataset.game;
       gameFilter.games[gameName] = !gameFilter.games[gameName];
       item.classList.toggle('checked', gameFilter.games[gameName]);
-      gameFilter.enabled = Object.values(gameFilter.games).some(v => v === false);
+      if (!gameFilter.ramMode) {
+        gameFilter.enabled = Object.values(gameFilter.games).some(v => v === false);
+      }
       saveAndApplyFilter();
     });
   });
@@ -263,6 +296,9 @@ async function saveAndApplyFilter() {
 }
 
 function isGameFiltered(gameName) {
+  if (gameFilter.ramMode) {
+    return gameFilter.games[gameName] === true;
+  }
   if (!gameFilter.enabled) return false;
   return gameFilter.games[gameName] === false;
 }
@@ -361,8 +397,8 @@ function renderCampaigns(campaigns) {
 
   let sorted = [...filtered].sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
 
-  // Filter out hidden games if hideFiltered is enabled
-  if (gameFilter.hideFiltered) {
+  // In RAM mode always hide excluded games; otherwise only when hideFiltered is on
+  if (gameFilter.ramMode || gameFilter.hideFiltered) {
     sorted = sorted.filter(c => !isGameFiltered(c.game));
   }
 
@@ -446,7 +482,7 @@ function renderCampaignCard(campaign, urgency) {
     ? drops.map(renderDropItem).join('')
     : `<div style="text-align: center; padding: 16px; color: var(--text-muted); font-size: 13px;">${t('drops_not_loaded_1')}<br>${t('drops_not_loaded_2')}</div>`;
 
-  const gameSlug = gameNameToSlug(campaign.game);
+  const gameSlug = campaign.gameSlug || gameNameToSlug(campaign.game);
 
   return `
     <div class="campaign-card ${urgencyClass} ${isCompleted ? 'completed' : ''} ${filteredClass}" data-id="${campaign.id || ''}">
@@ -665,7 +701,7 @@ function renderProgressCampaignCard(campaign) {
     ? `<div style="text-align: center; padding: 10px; color: var(--text-muted); font-size: 11px; border-top: 1px solid var(--border);">${t('drops_incomplete')}</div>`
     : '';
 
-  const gameSlug = gameNameToSlug(campaign.game);
+  const gameSlug = campaign.gameSlug || gameNameToSlug(campaign.game);
 
   return `
     <div class="campaign-card ${urgencyClass}">
@@ -736,7 +772,9 @@ function gameNameToSlug(gameName) {
     'counter-strike': 'counter-strike-2',
     'pubg: battlegrounds': 'pubg-battlegrounds',
     'playerunknowns battlegrounds': 'pubg-battlegrounds',
-    'bitcraft online': 'bitcraft'
+    'bitcraft online': 'bitcraft',
+    'rainbow six siege': 'tom-clancys-rainbow-six-siege',
+    'tom clancy\'s rainbow six siege': 'tom-clancys-rainbow-six-siege'
   };
 
   const normalized = gameName.toLowerCase().trim();

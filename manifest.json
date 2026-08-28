@@ -1,52 +1,40 @@
 {
-  "manifest_version": 3,
-  "name": "Twitch Drop Tracker",
-  
-  "version": "1.3.6",
-  "description": "Track your Twitch drops campaigns and progress, sorted by expiration date",
-  "permissions": [
-    "storage",
-    "cookies",
-    "scripting",
-    "tabs"
-  ],
-  "host_permissions": [
-    "https://www.twitch.tv/*",
-    "https://gql.twitch.tv/*"
-  ],
-  "action": {
-    "default_popup": "popup/popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://www.twitch.tv/drops/*"],
-      "js": ["content-main.js"],
+   "action": {
+      "default_icon": {
+         "128": "icons/icon128.png",
+         "16": "icons/icon16.png",
+         "48": "icons/icon48.png"
+      },
+      "default_popup": "popup/popup.html"
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "content_scripts": [ {
+      "js": [ "content-main.js" ],
+      "matches": [ "https://www.twitch.tv/drops/*" ],
       "run_at": "document_start",
       "world": "MAIN"
-    },
-    {
-      "matches": ["https://www.twitch.tv/drops/*"],
-      "js": ["content-isolated.js"],
+   }, {
+      "js": [ "content-isolated.js" ],
+      "matches": [ "https://www.twitch.tv/drops/*" ],
       "run_at": "document_start"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["fullpage/*", "icons/*", "locales/*", "i18n.js"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+   } ],
+   "description": "Track your Twitch drops campaigns and progress, sorted by expiration date",
+   "host_permissions": [ "https://www.twitch.tv/*", "https://gql.twitch.tv/*" ],
+   "icons": {
+      "128": "icons/icon128.png",
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArNrIin2gdZGRtrYma0O5DP8S1mjiq8FoTCIKAuX4mvQxqC4hCWfjVdjny57rXdCzSbnlsp40/mVPWT6GGav6+vObb1R+SpdxfX9plO/OvjxTK+hVqzWztd8ONuSGoo9g3xfHwYVBj5SToovP3P9yJAFbvV172dY4SLhSTzO9c9WQThCHP860vaJyexOKQEwQQffP9Z0TpZ8AfRGvC0eeELyrN8JamHUgZCKUOMFbiQ/Z4YCh8Ya4U1ZqqDMXl86J0+Zn4WUyJyfQZ3scqDGG6DLWGQeSTjNPeNN9JeqWekZ/0xECVufPHwO+34tEHf02+ce1GG/ktIal19sN9O4Y/wIDAQAB",
+   "manifest_version": 3,
+   "name": "Twitch Drop Tracker",
+   "permissions": [ "storage", "cookies", "scripting", "tabs" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.3.7",
+   "web_accessible_resources": [ {
+      "matches": [ "\u003Call_urls>" ],
+      "resources": [ "fullpage/*", "icons/*", "locales/*", "i18n.js" ]
+   } ]
 }

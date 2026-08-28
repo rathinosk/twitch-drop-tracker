@@ -102,7 +102,7 @@ const dataFetcher = {
               id
               name
               owner { id name }
-              game { id displayName boxArtURL }
+              game { id displayName boxArtURL slug }
               status startAt endAt
               timeBasedDrops {
                 id name requiredMinutesWatched requiredSubs
@@ -112,7 +112,7 @@ const dataFetcher = {
             }
             gameEventDrops {
               id name imageURL isConnected
-              game { displayName }
+              game { displayName slug }
               lastAwardedAt totalCount
             }
           }
@@ -206,6 +206,7 @@ const dataFetcher = {
         .map(c => ({
           id: c.id,
           game: c.game?.displayName || c.name,
+          gameSlug: c.game?.slug || '',
           publisher: c.owner?.name || '',
           imageUrl: twitchAPI.formatBoxArtUrl(c.game?.boxArtURL),
           startDate: c.startAt,
@@ -401,6 +402,7 @@ const campaignMerger = {
       return {
         id: campaign.id,
         game: gameName,
+        gameSlug: campaign.game?.slug || '',
         publisher: campaign.owner?.name || '',
         imageUrl: twitchAPI.formatBoxArtUrl(campaign.game?.boxArtURL),
         startDate: campaign.startAt,
@@ -645,6 +647,7 @@ const backgroundScraper = {
       .map(c => ({
         id: c.id,
         game: c.game?.displayName || c.name,
+        gameSlug: c.game?.slug || '',
         publisher: c.owner?.name || '',
         imageUrl: twitchAPI.formatBoxArtUrl(c.game?.boxArtURL),
         startDate: c.startAt,

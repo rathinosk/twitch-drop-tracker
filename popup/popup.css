@@ -1212,6 +1212,22 @@ body {
   background-color: var(--accent-purple);
 }
 
+/* RAM Efficiency Mode */
+.ram-mode-banner {
+  padding: 7px 12px;
+  background-color: rgba(255, 171, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 171, 0, 0.2);
+  color: var(--warning);
+  font-size: 11px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.filter-sidebar.ram-mode .filter-game-item.checked .filter-game-checkbox {
+  background-color: var(--danger);
+  border-color: var(--danger);
+}
+
 /* Scrollbar for filter list */
 .filter-games-list::-webkit-scrollbar {
   width: 6px;
