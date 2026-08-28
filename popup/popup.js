@@ -291,8 +291,8 @@ function populateFilterGames(campaigns) {
     }
   });
 
-  // Initialize new games (default: checked=included in normal mode, unchecked=not-excluded in RAM mode)
-  const defaultChecked = !gameFilter.ramMode;
+  // Initialize new games as included in normal mode and blocked in RAM mode.
+  const defaultChecked = gameFilter.ramMode;
   games.forEach((imageUrl, gameName) => {
     if (!(gameName in gameFilter.games)) {
       gameFilter.games[gameName] = defaultChecked;
