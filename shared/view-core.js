@@ -34,7 +34,7 @@ export function configure(overrides) {
 }
 
 export const state = {
-  gameFilter: { enabled: false, games: {}, hideFiltered: false, ramMode: false },
+  gameFilter: { enabled: false, games: {}, hideFiltered: false, ramMode: false, hideSubDrops: false },
   allCampaigns: [],
   filterSearchQuery: '',
   campaignSearchQuery: '',
@@ -105,9 +105,13 @@ export async function loadFilterState() {
   // Initialize defaults for fields that may not exist in older stored data
   if (state.gameFilter.hideFiltered === undefined) state.gameFilter.hideFiltered = false;
   if (state.gameFilter.ramMode === undefined) state.gameFilter.ramMode = false;
+  if (state.gameFilter.hideSubDrops === undefined) state.gameFilter.hideSubDrops = false;
 
   const hideFilteredCheckbox = document.getElementById('hide-filtered-checkbox');
   if (hideFilteredCheckbox) hideFilteredCheckbox.checked = state.gameFilter.hideFiltered;
+
+  const hideSubDropsCheckbox = document.getElementById('hide-sub-drops-checkbox');
+  if (hideSubDropsCheckbox) hideSubDropsCheckbox.checked = state.gameFilter.hideSubDrops;
 
   updateFilterButtonState();
   updateRamModeUI();
@@ -122,6 +126,7 @@ export function initFilterSidebar() {
   const deselectAllBtn = document.getElementById('deselect-all-btn');
   const filterSearchInput = document.getElementById('filter-search-input');
   const hideFilteredCheckbox = document.getElementById('hide-filtered-checkbox');
+  const hideSubDropsCheckbox = document.getElementById('hide-sub-drops-checkbox');
 
   filterBtn.addEventListener('click', () => {
     if (config.filterAnimated) {
@@ -181,12 +186,17 @@ export function initFilterSidebar() {
     state.gameFilter.hideFiltered = e.target.checked;
     saveAndApplyFilter();
   });
+
+  hideSubDropsCheckbox.addEventListener('change', (e) => {
+    state.gameFilter.hideSubDrops = e.target.checked;
+    saveAndApplyFilter();
+  });
 }
 
 export function updateFilterButtonState() {
   const filterBtn = document.getElementById('filter-btn');
   const hasExclusions = Object.values(state.gameFilter.games).some(v => v === false);
-  filterBtn.classList.toggle('filter-active', state.gameFilter.ramMode || hasExclusions);
+  filterBtn.classList.toggle('filter-active', state.gameFilter.ramMode || hasExclusions || state.gameFilter.hideSubDrops);
 }
 
 export function updateRamModeUI() {
@@ -194,7 +204,7 @@ export function updateRamModeUI() {
   const banner = document.getElementById('ram-mode-banner');
   const selectAllBtn = document.getElementById('select-all-btn');
   const deselectAllBtn = document.getElementById('deselect-all-btn');
-  const hideFilteredOption = document.querySelector('.filter-hide-option');
+  const hideFilteredOption = document.querySelector('.filter-hide-option-games');
   const ramToggle = document.getElementById('ram-mode-toggle');
 
   if (ramToggle) ramToggle.checked = state.gameFilter.ramMode;
@@ -420,6 +430,15 @@ export function renderCampaigns(campaigns) {
     sorted = sorted.filter(c => !isGameFiltered(c.game));
   }
 
+  // Drop this campaign entirely if every drop it has is subscription-based; a campaign
+  // with no drops loaded yet (drops.length === 0) is left alone so its "not loaded" card still shows.
+  if (state.gameFilter.hideSubDrops) {
+    sorted = sorted.filter(c => {
+      const drops = c.drops || [];
+      return drops.length === 0 || drops.some(d => d.dropType !== 'sub');
+    });
+  }
+
   // Use calendar day boundaries (end of each day at 23:59:59)
   const today = new Date();
   const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
@@ -474,7 +493,8 @@ function renderSection(key, label, cardsHtml, colorClass = '') {
 }
 
 function renderCampaignCard(campaign, urgency) {
-  const drops = campaign.drops || [];
+  const rawDrops = campaign.drops || [];
+  const drops = state.gameFilter.hideSubDrops ? rawDrops.filter(d => d.dropType !== 'sub') : rawDrops;
   const claimedCount = drops.filter(d => d.status === 'claimed').length;
   const hasProgress = drops.some(d => ['claimed', 'in_progress', 'claimable'].includes(d.status));
   // Override isCompleted only if drops are actively in progress (not just locked)
@@ -581,7 +601,11 @@ function renderDropItem(drop) {
 // =============================================================================
 async function renderMyProgress(inventory) {
   const container = document.getElementById(config.progressContainerId);
-  const { inProgress = [], claimable = [], claimed = [] } = inventory;
+  const { inProgress: rawInProgress = [], claimable: rawClaimable = [], claimed: rawClaimed = [] } = inventory;
+  const filterSubs = (arr) => state.gameFilter.hideSubDrops ? arr.filter(d => d.dropType !== 'sub') : arr;
+  const inProgress = filterSubs(rawInProgress);
+  const claimable = filterSubs(rawClaimable);
+  const claimed = filterSubs(rawClaimed);
 
   if (!inProgress.length && !claimable.length && !claimed.length) {
     container.innerHTML = `
@@ -656,7 +680,8 @@ async function renderMyProgress(inventory) {
 }
 
 function renderProgressCampaignCard(campaign) {
-  const drops = campaign.drops || [];
+  const rawDrops = campaign.drops || [];
+  const drops = state.gameFilter.hideSubDrops ? rawDrops.filter(d => d.dropType !== 'sub') : rawDrops;
   if (!drops.length) return '';
 
   const claimedCount = drops.filter(d => d.status === 'claimed').length;

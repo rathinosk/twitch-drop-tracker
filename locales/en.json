@@ -13,6 +13,7 @@
   "search_games": "Search games...",
   "search_campaigns": "Search campaigns...",
   "filter_hide_label": "Hide filtered games from list",
+  "filter_hide_sub_label": "Hide subscription-based drops",
   "settings_title": "⚙️ Settings",
   "settings_language": "Language",
   "loading_campaigns": "Click refresh to load campaigns",
