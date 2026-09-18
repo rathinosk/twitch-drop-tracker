@@ -1223,10 +1223,6 @@ body {
   font-weight: 500;
 }
 
-.filter-sidebar.ram-mode .filter-game-item.checked .filter-game-checkbox {
-  background-color: var(--danger);
-  border-color: var(--danger);
-}
 
 /* Scrollbar for filter list */
 .filter-games-list::-webkit-scrollbar {

@@ -218,27 +218,17 @@ async function initFilter() {
   closeFilterBtn.addEventListener('click', closeFilter);
   filterOverlay.addEventListener('click', closeFilter);
 
-  // Select/Deselect all (labels flip in RAM mode)
+  // Select/Deselect all (checked = included in both modes; labels flip in RAM mode)
   selectAllBtn.addEventListener('click', () => {
-    if (gameFilter.ramMode) {
-      // RAM mode "Include All": uncheck all = exclude nothing
-      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = false; });
-    } else {
-      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = true; });
-      gameFilter.enabled = false;
-    }
+    Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = true; });
+    if (!gameFilter.ramMode) gameFilter.enabled = false;
     saveAndApplyFilter();
     renderFilterList();
   });
 
   deselectAllBtn.addEventListener('click', () => {
-    if (gameFilter.ramMode) {
-      // RAM mode "Exclude All": check all = exclude everything
-      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = true; });
-    } else {
-      Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = false; });
-      gameFilter.enabled = true;
-    }
+    Object.keys(gameFilter.games).forEach(g => { gameFilter.games[g] = false; });
+    if (!gameFilter.ramMode) gameFilter.enabled = true;
     saveAndApplyFilter();
     renderFilterList();
   });
@@ -276,9 +266,7 @@ async function initFilter() {
 
 function updateFilterButtonState() {
   const filterBtn = document.getElementById('filter-btn');
-  const hasExclusions = gameFilter.ramMode
-    ? Object.values(gameFilter.games).some(v => v === true)
-    : Object.values(gameFilter.games).some(v => v === false);
+  const hasExclusions = Object.values(gameFilter.games).some(v => v === false);
   filterBtn.classList.toggle('filter-active', gameFilter.ramMode || hasExclusions);
 }
 
@@ -291,8 +279,10 @@ function populateFilterGames(campaigns) {
     }
   });
 
-  // Initialize new games as included in normal mode and blocked in RAM mode.
-  const defaultChecked = gameFilter.ramMode;
+  // Initialize new games: checked (included) by default in normal mode so new
+  // drops are scanned automatically; unchecked (excluded) in RAM mode so new
+  // games are never auto-enabled and must be turned on manually.
+  const defaultChecked = !gameFilter.ramMode;
   games.forEach((imageUrl, gameName) => {
     if (!(gameName in gameFilter.games)) {
       gameFilter.games[gameName] = defaultChecked;
@@ -380,8 +370,10 @@ async function saveAndApplyFilter() {
 
 function isGameFiltered(gameName) {
   if (gameFilter.ramMode) {
-    // RAM mode: checked (true) = excluded
-    return gameFilter.games[gameName] === true;
+    // RAM mode: checked (true) = included, same as normal mode.
+    // This is an always-on allowlist, so anything not explicitly checked
+    // (including newly-discovered games) is filtered out.
+    return gameFilter.games[gameName] !== true;
   }
   if (!gameFilter.enabled) return false;
   return gameFilter.games[gameName] === false;

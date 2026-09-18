@@ -568,8 +568,10 @@
     const filter = getGameFilter();
     if (!gameName) return true;
     if (filter.ramMode) {
-      // RAM mode: checked (true) = excluded
-      return filter.games[gameName] !== true;
+      // RAM mode: checked (true) = included, same as normal mode.
+      // Unlike normal mode, this is an always-on allowlist, so new/unknown
+      // games (not yet in the map) default to excluded rather than included.
+      return filter.games[gameName] === true;
     }
     if (!filter.enabled) return true;
     return filter.games[gameName] !== false;

@@ -1021,10 +1021,6 @@ body {
   border-color: var(--accent-purple);
 }
 
-.filter-sidebar.ram-mode .filter-game-item.checked .filter-game-checkbox {
-  background: var(--danger);
-  border-color: var(--danger);
-}
 
 .filter-game-checkbox svg {
   display: none;
