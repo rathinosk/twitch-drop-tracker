@@ -187,7 +187,7 @@ const dataFetcher = {
         dropCampaigns(status: ACTIVE) {
           id name status startAt endAt detailsURL accountLinkURL
           owner { id name }
-          game { id displayName boxArtURL }
+          game { id displayName boxArtURL slug }
           self { isAccountConnected }
           timeBasedDrops {
             id name startAt endAt requiredMinutesWatched requiredSubs
@@ -578,7 +578,7 @@ const backgroundScraper = {
             detailsURL
             accountLinkURL
             owner { id name }
-            game { id displayName boxArtURL }
+            game { id displayName boxArtURL slug }
             self { isAccountConnected }
             timeBasedDrops {
               id

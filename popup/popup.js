@@ -121,7 +121,10 @@ function initSettings() {
 // =============================================================================
 async function clearCache() {
   try {
-    await chrome.storage.local.clear();
+    // Only clear the cached campaign/inventory snapshot — not the permanent
+    // claim history (completedCampaigns/completedGames/claimedDropsHistory)
+    // or the user's gameFilter/language settings.
+    await chrome.storage.local.remove(['campaigns', 'inventory', 'lastUpdated']);
     const emptyState = `
       <div class="empty-state">
         <div class="empty-state-icon">🗑️</div>

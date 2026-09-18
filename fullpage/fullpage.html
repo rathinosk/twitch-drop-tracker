@@ -55,29 +55,49 @@
     <!-- Stats Bar -->
     <div class="stats-bar">
       <div class="stats-content">
-        <div class="stat-item">
-          <span class="stat-value" id="stat-campaigns">0</span>
-          <span class="stat-label" data-i18n="stat_campaigns">Campaigns</span>
+        <div class="stats-group">
+          <div class="stat-item">
+            <span class="stat-value" id="stat-campaigns">0</span>
+            <span class="stat-label" data-i18n="stat_campaigns">Campaigns</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-in-progress">0</span>
+            <span class="stat-label" data-i18n="stat_in_progress">In Progress</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-claimable">0</span>
+            <span class="stat-label" data-i18n="stat_ready_to_claim">Ready to Claim</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-claimed">0</span>
+            <span class="stat-label" data-i18n="stat_claimed">Claimed</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-value" id="last-updated">Never</span>
+            <span class="stat-label" data-i18n="stat_last_updated">Last Updated</span>
+          </div>
         </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value" id="stat-in-progress">0</span>
-          <span class="stat-label" data-i18n="stat_in_progress">In Progress</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value" id="stat-claimable">0</span>
-          <span class="stat-label" data-i18n="stat_ready_to_claim">Ready to Claim</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value" id="stat-claimed">0</span>
-          <span class="stat-label" data-i18n="stat_claimed">Claimed</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value" id="last-updated">Never</span>
-          <span class="stat-label" data-i18n="stat_last_updated">Last Updated</span>
+        <div class="stats-actions">
+          <a href="https://www.twitch.tv/drops/campaigns" target="_blank" class="stats-action-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            <span data-i18n="footer_open_twitch">Open Twitch Drops</span>
+          </a>
+          <button id="load-all-drops-btn" class="stats-action-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span data-i18n="footer_load_drops">Load All Drop Details</span>
+          </button>
         </div>
       </div>
     </div>
@@ -162,34 +182,6 @@
       </div>
     </div>
     <div id="filter-overlay" class="filter-overlay"></div>
-
-    <!-- Scan Hint -->
-    <div id="scan-hint" class="scan-hint hidden" data-i18n="hint_keep_tab_focused">
-      ⚠️ Keep the new tab focused while loading drop details!
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-content">
-        <a href="https://www.twitch.tv/drops/campaigns" target="_blank" class="footer-link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-          <span data-i18n="footer_open_twitch">Open Twitch Drops</span>
-        </a>
-        <span class="footer-divider">|</span>
-        <button id="load-all-drops-btn" class="footer-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span data-i18n="footer_load_drops">Load All Drop Details</span>
-        </button>
-      </div>
-    </footer>
   </div>
 
   <script src="../i18n.js"></script>

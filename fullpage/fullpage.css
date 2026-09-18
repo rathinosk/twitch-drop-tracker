@@ -238,8 +238,48 @@ body {
   padding: 16px 24px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.stats-group {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  flex: 1;
   gap: 32px;
+}
+
+.stats-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.stats-action-link,
+.stats-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stats-action-link:hover,
+.stats-action-btn:hover {
+  background: var(--accent-purple);
+  border-color: var(--accent-purple);
+  transform: translateY(-1px);
 }
 
 .stat-item {
@@ -1120,54 +1160,6 @@ body {
   margin-top: 6px;
 }
 
-/* Footer */
-.footer {
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--glass-border);
-  padding: 16px;
-  position: relative;
-  z-index: 1;
-}
-
-.footer-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-
-.footer-link,
-.footer-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.footer-link:hover,
-.footer-btn:hover {
-  background: var(--accent-purple);
-  border-color: var(--accent-purple);
-  transform: translateY(-2px);
-}
-
-.footer-divider {
-  color: var(--text-muted);
-}
-
 /* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
@@ -1231,7 +1223,19 @@ body {
 
   .stats-content {
     flex-wrap: wrap;
+    justify-content: center;
     gap: 16px;
+  }
+
+  .stats-group {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .stats-actions {
+    flex: 1 1 100%;
+    justify-content: center;
   }
 
   .stat-divider {
