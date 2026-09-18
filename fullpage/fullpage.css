@@ -396,6 +396,8 @@ body {
 }
 
 .section-chevron {
+  width: 14px;
+  height: 14px;
   margin-left: auto;
   transition: transform 0.25s ease;
   flex-shrink: 0;
@@ -531,9 +533,16 @@ body {
 .campaign-expiry.week { color: var(--blue-light); }
 
 .expand-icon {
+  width: 20px;
+  height: 20px;
   color: var(--text-muted);
   transition: transform 0.3s ease;
   flex-shrink: 0;
+}
+
+.expand-icon-sm {
+  width: 16px;
+  height: 16px;
 }
 
 .campaign-card.expanded .expand-icon {
@@ -980,6 +989,13 @@ body {
   padding: 12px 0;
 }
 
+.filter-no-match {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
 .filter-game-item {
   display: flex;
   align-items: center;
@@ -1077,6 +1093,31 @@ body {
 .empty-state-icon {
   font-size: 48px;
   margin-bottom: 16px;
+}
+
+.empty-state-hint {
+  font-size: 13px;
+  margin-top: 8px;
+  color: var(--text-muted);
+}
+
+.campaign-drops-empty {
+  text-align: center;
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.campaign-drops-note {
+  text-align: center;
+  padding: 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+  border-top: 1px solid var(--border);
+}
+
+.campaign-overall-progress {
+  margin-top: 6px;
 }
 
 /* Footer */

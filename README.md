@@ -77,11 +77,19 @@ For full campaign details, it intercepts network requests when you visit the Twi
 ├── background.js          # Service worker for API calls
 ├── content-main.js        # Main world script for fetch interception
 ├── content-isolated.js    # Isolated world script for message passing
+├── i18n.js                # Shared translation loader
+├── shared/
+│   └── view-core.js       # Shared rendering/filtering/data logic for popup + full page
 ├── popup/
 │   ├── popup.html         # Popup UI structure
 │   ├── popup.css          # Popup styles
-│   └── popup.js           # Popup logic and rendering
-└── icons/                 # Extension icons
+│   └── popup.js           # Popup-specific wiring (settings, diagnostics)
+├── fullpage/
+│   ├── fullpage.html      # Full-page UI structure
+│   ├── fullpage.css       # Full-page styles
+│   └── fullpage.js        # Full-page-specific wiring (search, stats)
+├── locales/                # Per-language translation JSON files
+└── icons/                  # Extension icons
 ```
 
 ### Building

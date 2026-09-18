@@ -10,5 +10,6 @@ include:
   - icons/**/*
   - locales/**/*
   - popup/**/*
+  - shared/**/*
 
 exclude: []
