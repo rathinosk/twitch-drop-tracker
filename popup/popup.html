@@ -134,14 +134,14 @@
         </div>
         <div class="setting-item">
           <div class="setting-info">
-            <div class="setting-label">Version 1.3.7</div>
+            <div class="setting-label" id="version-label">Version</div>
             <div class="setting-description">Uses Twitch API directly for fast loading</div>
           </div>
         </div>
         <div class="setting-item">
           <div class="setting-info">
             <div class="setting-label">RAM Efficiency Mode</div>
-            <div class="setting-description">Check games to exclude from scan &amp; hide from list</div>
+            <div class="setting-description">Only checked games are scanned; new games start unchecked</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="ram-mode-toggle">
@@ -158,7 +158,7 @@
         <div id="diag-copy-feedback" class="diag-feedback hidden"></div>
         <div class="changelog">
           <div class="changelog-version">⚙️ NEW IN v1.3.7:</div>
-          <div class="changelog-item">• RAM Efficiency Mode — check games in the filter to exclude them from scan and hide from list</div>
+          <div class="changelog-item">• RAM Efficiency Mode — check games in the filter to include them in the scan; new games start unchecked</div>
           <div class="changelog-item">• Game links now use Twitch's own URL slug from the API, fixing mismatches like Rainbow Six Siege</div>
           <div class="changelog-version">⚙️ NEW IN v1.3.6:</div>
           <div class="changelog-item">• Scan fix: "No campaigns found" error when campaigns were visible — page ready check now waits for actual campaign buttons, not just header nav elements</div>

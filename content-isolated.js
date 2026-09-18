@@ -26,6 +26,19 @@ async function injectLocale() {
 injectLocale();
 
 // =============================================================================
+// Version Injection
+// =============================================================================
+function injectVersion() {
+  try {
+    document.documentElement.setAttribute('data-twitch-drops-version', chrome.runtime.getManifest().version);
+  } catch (e) {
+    console.error('[TwitchDrops] Failed to inject version:', e);
+  }
+}
+
+injectVersion();
+
+// =============================================================================
 // Game Filter Injection
 // =============================================================================
 async function injectFilter() {

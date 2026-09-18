@@ -43,6 +43,10 @@
     bubble_keep_focused_sub: 'Switching away may interrupt the drop scan.',
   };
 
+  function getVersion() {
+    return document.documentElement.getAttribute('data-twitch-drops-version') || 'unknown';
+  }
+
   function tNotif(key, vars = {}) {
     let raw;
     try {
@@ -817,9 +821,13 @@
       const detailsCount = Object.keys(state.details).length;
       const totalDrops = Object.values(state.details).reduce((sum, drops) => sum + (drops?.length || 0), 0);
 
-      // Only push data to storage if we actually captured drop details.
-      // Dispatching with 0 details would overwrite previously-good stored campaigns.
-      if (detailsCount > 0) {
+      // Push the captured campaign list to storage even if this scan captured
+      // zero new drop details (e.g. RAM mode skipped every game because none
+      // were checked yet). background.js preserves any richer previously-stored
+      // drop data per-campaign, so this can't regress My Progress — and without
+      // it, newly-discovered games would never reach the filter list for the
+      // user to check them.
+      if (campaignCount > 0) {
         dispatchCampaigns();
       }
       const skipMsg = skippedFiltered > 0 ? tNotif('notif_done_skip', {filtered: skippedFiltered}) : '';
@@ -828,7 +836,7 @@
       diagLog.add(`Finalize: campaigns=${campaignCount} expanded=${totalExpanded} skipped=${skippedFiltered} details=${detailsCount} drops=${totalDrops}`);
       const resultStatus = detailsCount > 0 ? 'SUCCESS' : (totalExpanded === 0 ? 'NO_BUTTONS_CLICKED' : 'DETAILS_NOT_CAPTURED');
       diagLog.add(`Result: ${resultStatus}`);
-      const version = '1.3.7';
+      const version = getVersion();
       window.dispatchEvent(new CustomEvent('twitch-drops-diaglog', {
         detail: { log: diagLog.flush(version) }
       }));

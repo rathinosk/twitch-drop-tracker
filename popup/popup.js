@@ -29,7 +29,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSettings();
   initFilter();
   loadStoredData();
+  displayVersion();
 });
+
+function displayVersion() {
+  const label = document.getElementById('version-label');
+  if (label) label.textContent = `Version ${chrome.runtime.getManifest().version}`;
+}
 
 function initTabs() {
   document.querySelectorAll('.tab').forEach(tab => {
