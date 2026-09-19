@@ -28,7 +28,9 @@ A Chrome extension to track your Twitch drops campaigns and progress, sorted by 
 
 ### From Chrome Web Store
 
-*Coming soon*
+This fork is not published on the Chrome Web Store and there are no plans to submit it — install from source instead.
+
+The original project this was forked from is available on the Chrome Web Store as [Twitch Drops Tracker](https://chromewebstore.google.com/detail/twitch-drops-tracker/hhkbghkcichjongmpfgjoefdlcofdejl), but it does not include the changes made in this fork.
 
 ## Usage
 
