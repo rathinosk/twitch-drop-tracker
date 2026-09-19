@@ -705,6 +705,7 @@
 
       let totalExpanded = 0;
       let skippedFiltered = 0;
+      let remainingAtExit = 0;
       const clickedButtons = new Set();
 
       for (let i = 0; i < CONFIG.MAX_ITERATIONS; i++) {
@@ -742,6 +743,13 @@
             continue;
           }
 
+          // Snapshot drop counts so the post-click expiry check below can tell
+          // what THIS click produced, rather than trusting insertion order in
+          // a dict that's also written by unrelated passive GQL traffic.
+          const detailsSnapshotBefore = new Map(
+            Object.keys(state.details).map(id => [id, (state.details[id] || []).length])
+          );
+
           // Scroll into view and click
           btn.scrollIntoView({ behavior: 'instant', block: 'center' });
           await this.delay(CONFIG.EXPAND_CLICK_DELAY);
@@ -763,10 +771,25 @@
             await this.delay(CONFIG.EXPAND_CLICK_DELAY);
           }
 
-          // Check for expired campaign
-          const lastDetailId = Object.keys(state.details).pop();
-          if (lastDetailId && this.isExpired(lastDetailId)) {
+          // Check for expired campaign — scoped to data THIS click actually
+          // produced, not "whatever key happens to be last in the page-lifetime
+          // details dict" (that dict is also written by the always-on fetch
+          // interceptor, unrelated to this click). If nothing changed (Apollo
+          // cache hit — common since Twitch's own page-load query already
+          // returns full details for many campaigns), there's no signal to act
+          // on, so skip the expiry check for this click rather than falling
+          // back to a stale/unrelated key. Still a bounded approximation, not
+          // a guarantee — the window is now "this click's wait + collapse
+          // delay" instead of the whole scan.
+          const changedIds = Object.keys(state.details).filter(id => {
+            const before = detailsSnapshotBefore.get(id);
+            return before === undefined || before !== (state.details[id] || []).length;
+          });
+
+          if (changedIds.length > 0 && changedIds.every(id => this.isExpired(id))) {
             hitExpired = true;
+            remainingAtExit = validButtons.length - validButtons.indexOf(btn) - 1;
+            diagLog.add(`Iteration ${i}: click on ${btnId} produced expired campaign(s) [${changedIds.join(', ')}] — stopping early (${remainingAtExit} more valid buttons not processed this round)`);
             break;
           }
 
@@ -793,13 +816,13 @@
         }
       }
 
-      await this.finalize(totalExpanded, skippedFiltered);
+      await this.finalize(totalExpanded, skippedFiltered, remainingAtExit);
     },
 
     /**
      * Finalize expansion process
      */
-    async finalize(totalExpanded, skippedFiltered = 0) {
+    async finalize(totalExpanded, skippedFiltered = 0, remainingAtExit = 0) {
       // Drain any in-flight GQL requests before reading state
       if (state.pendingRequests > 0) {
         const drainStart = Date.now();
@@ -833,8 +856,14 @@
       const skipMsg = skippedFiltered > 0 ? tNotif('notif_done_skip', {filtered: skippedFiltered}) : '';
 
       // Log final result and dispatch for storage
-      diagLog.add(`Finalize: campaigns=${campaignCount} expanded=${totalExpanded} skipped=${skippedFiltered} details=${detailsCount} drops=${totalDrops}`);
-      const resultStatus = detailsCount > 0 ? 'SUCCESS' : (totalExpanded === 0 ? 'NO_BUTTONS_CLICKED' : 'DETAILS_NOT_CAPTURED');
+      diagLog.add(`Finalize: campaigns=${campaignCount} expanded=${totalExpanded} skipped=${skippedFiltered} details=${detailsCount} drops=${totalDrops} remainingAtExit=${remainingAtExit}`);
+      const resultStatus = totalExpanded === 0
+        ? 'NO_BUTTONS_CLICKED'
+        : detailsCount === 0
+          ? 'DETAILS_NOT_CAPTURED'
+          : remainingAtExit > 0
+            ? 'SUCCESS_EARLY_EXIT'
+            : 'SUCCESS';
       diagLog.add(`Result: ${resultStatus}`);
       const version = getVersion();
       window.dispatchEvent(new CustomEvent('twitch-drops-diaglog', {
