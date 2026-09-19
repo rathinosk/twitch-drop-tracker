@@ -44,7 +44,7 @@ Triggered by opening `https://www.twitch.tv/drops/campaigns?loadAllDrops=true` (
 
 ### Game filter / "RAM mode"
 
-Filter state lives in `chrome.storage.local.gameFilter = { enabled, games: { [gameName]: boolean }, hideFiltered, ramMode }` and has **two different semantics** depending on `ramMode`, checked independently in `shared/view-core.js` (`isGameFiltered`, used by both UIs) and `content-main.js` (`isGameAllowed`, used during a scan) — keep these two implementations consistent when changing filter behavior:
+Filter state lives in `chrome.storage.local.gameFilter = { enabled, games: { [gameName]: boolean }, hideFiltered, ramMode, hideSubDrops }` and has **two different semantics** depending on `ramMode`, checked independently in `shared/view-core.js` (`isGameFiltered`, used by both UIs) and `content-main.js` (`isGameAllowed`, used during a scan) — keep these two implementations consistent when changing filter behavior. `hideSubDrops` is a display-only filter (drops out gift-sub-requirement drops in the rendered lists via `shared/view-core.js`) and is not consulted by the scan's game-level `isGameAllowed` check.
 
 - **Normal mode** (denylist): a game is included unless explicitly unchecked. New games default to checked/included. `enabled` is only true if at least one game has been excluded.
 - **RAM mode** (allowlist, `ramMode: true`): a game is included only if explicitly checked. New/unknown games default to **excluded**, so scans don't balloon in scope automatically as new campaigns appear. Intended for keeping "Load All Drop Details" scans cheap by scoping them to a small set of games.
